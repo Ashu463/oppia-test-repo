@@ -30,10 +30,10 @@ jobs:
         id: check-cla
         uses: actions/github-script@v6
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          SHEETS_CRED: '${{ secrets.SHEETS_CRED }}'
           SPREADSHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           USERNAME: '${{ github.event.assignee.login }}'
-          CLIENT_SECRET: '${{ secrets.CLIENT_SECRET }}'
           CREDENTIALS: '${{ secrets.CREDENTIALS }}'
         with:
           script: |
@@ -48,7 +48,7 @@ jobs:
               return oauth2Client;
             };
 
-            const clientSecret = process.env.CLIENT_SECRET;
+            const clientSecret = process.env.SHEETS_CRED;
             const oauthClient = authorize(JSON.parse(clientSecret));
             const sheets = google.sheets('v4');
 
