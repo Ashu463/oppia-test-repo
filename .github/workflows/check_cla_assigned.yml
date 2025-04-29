@@ -37,8 +37,10 @@ jobs:
           CREDENTIALS: '${{ secrets.CREDENTIALS }}'
         with:
           script: |
+            console.log('Checking CLA signature...');
             const { google } = require('googleapis');
             const { OAuth2Client } = require('google-auth-library');
+            console.log('Libraries installed successfully');
             const authorize = (credentials) => {
               const clientSecret = credentials.installed.client_secret;
               const clientId = credentials.installed.client_id;
