@@ -49,11 +49,11 @@ jobs:
               oauth2Client.credentials = JSON.parse(process.env.CREDENTIALS);
               return oauth2Client;
             };
-
+            console.log('Authorizing client...');
             const clientSecret = process.env.SHEETS_CRED;
             const oauthClient = authorize(JSON.parse(clientSecret));
             const sheets = google.sheets('v4');
-
+            console.log('Fetching spreadsheet values...');
             const rows = await sheets.spreadsheets.values.get({
               auth: oauthClient,
               spreadsheetId: process.env.SPREADSHEET_ID,
