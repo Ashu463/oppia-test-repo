@@ -68,6 +68,10 @@ jobs:
               // Create auth client
               const auth = new OAuth2Client(clientId, clientSecret, redirectUri);
               
+              // Set credentials from the stored refresh token
+              auth.setCredentials({
+                refresh_token: sheetsCredJson.refresh_token
+              });
               
               console.log("Authentication setup complete");
               
