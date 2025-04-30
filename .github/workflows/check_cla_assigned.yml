@@ -79,6 +79,11 @@ jobs:
                 range: 'Usernames!A:A',
               });
               
+              if(!response) {
+                console.log("Response not found in the spreadsheet");
+                core.setOutput('has-signed-cla', 'false');
+                return;
+              }
               // Check for valid response
               if (!response.data.values) {
                 console.log("No values found in spreadsheet");
