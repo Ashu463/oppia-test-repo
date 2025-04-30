@@ -36,6 +36,7 @@ jobs:
         with:
           script: |
             try {
+              consle.log('This solution is working fine')
               console.log("Starting CLA verification process");
               
               // Verify USERNAME environment variable
