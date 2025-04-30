@@ -30,14 +30,16 @@ jobs:
         id: check-cla
         uses: actions/github-script@v6
         env:
-          GCP_SERVICE_ACCOUNT_KEY: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+          SHEETS_CRED: '${{ secrets.SHEETS_CRED }}'
           SPREADSHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
-          USERNAME: '${{ github.event.assignee.login }}'
+          USERNAME: '${{ github.event.issue.assignee.login || github.event.assignee.login || '' }}'
         with:
           script: |
             try {
-              consle.log('This solution is working fine')
               console.log("Starting CLA verification process");
+              
+              // Parse SHEETS_CRED
+              const sheetsCredJson = JSON.parse(process.env.SHEETS_CRED);
               
               // Verify USERNAME environment variable
               const username = process.env.USERNAME;
@@ -56,15 +58,19 @@ jobs:
               
               // Load required libraries
               const { google } = require('googleapis');
-              const { GoogleAuth } = require('google-auth-library');
+              const { OAuth2Client } = require('google-auth-library');
               
-              // Parse the service account key
-              const serviceAccountKey = JSON.parse(process.env.GCP_SERVICE_ACCOUNT_KEY);
+              // Set up OAuth client using extracted credentials
+              const clientId = sheetsCredJson.client_id;
+              const clientSecret = sheetsCredJson.client_secret;
+              const redirectUri = sheetsCredJson.redirect_uris[0];
               
-              // Create auth client using service account
-              const auth = new GoogleAuth({
-                credentials: serviceAccountKey,
-                scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+              // Create auth client
+              const auth = new OAuth2Client(clientId, clientSecret, redirectUri);
+              
+              // Set credentials from the stored refresh token
+              auth.setCredentials({
+                refresh_token: sheetsCredJson.refresh_token
               });
               
               console.log("Authentication setup complete");
@@ -80,11 +86,6 @@ jobs:
                 range: 'Usernames!A:A',
               });
               
-              if(!response) {
-                console.log("Response not found in the spreadsheet");
-                core.setOutput('has-signed-cla', 'false');
-                return;
-              }
               // Check for valid response
               if (!response.data.values) {
                 console.log("No values found in spreadsheet");
