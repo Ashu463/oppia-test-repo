@@ -58,20 +58,36 @@ jobs:
               
               // Load required libraries
               const { google } = require('googleapis');
-              const { OAuth2Client } = require('google-auth-library');
+              const { JWT } = require('google-auth-library');
               
-              // Set up OAuth client using extracted credentials
-              const clientId = sheetsCredJson.client_id;
-              const clientSecret = sheetsCredJson.client_secret;
-              const redirectUri = sheetsCredJson.redirect_uris[0];
-              
-              // Create auth client
-              const auth = new OAuth2Client(clientId, clientSecret, redirectUri);
-              
-              // Set credentials from the stored refresh token
-              auth.setCredentials({
-                refresh_token: sheetsCredJson.refresh_token
+              // Set up JWT auth client instead of OAuth2Client
+              // This doesn't require redirect URIs
+              const auth = new JWT({
+                email: sheetsCredJson.client_email || null,
+                key: sheetsCredJson.private_key || null,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+                subject: null,
               });
+              
+              // If we don't have service account credentials, try with OAuth refresh token
+              if (!sheetsCredJson.client_email || !sheetsCredJson.private_key) {
+                console.log("No service account credentials found, using OAuth refresh token");
+                const { OAuth2Client } = require('google-auth-library');
+                
+                // Create a simple OAuth client without specifying redirect URI
+                const oauth2Client = new OAuth2Client(
+                  sheetsCredJson.client_id,
+                  sheetsCredJson.client_secret
+                );
+                
+                // Set credentials using only the refresh token
+                oauth2Client.setCredentials({
+                  refresh_token: sheetsCredJson.refresh_token
+                });
+                
+                // Use this auth client instead
+                auth = oauth2Client;
+              }
               
               console.log("Authentication setup complete");
               
