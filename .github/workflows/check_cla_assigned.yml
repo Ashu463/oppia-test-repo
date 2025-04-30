@@ -32,7 +32,9 @@ jobs:
         env:
           SHEETS_CRED: '${{ secrets.SHEETS_CRED }}'
           SPREADSHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
-          USERNAME: '${{ github.event.issue.assignee.login || github.event.assignee.login || '' }}'
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          USERNAME: '${{ github.event.assignee.login }}'
+          CREDENTIALS: '${{ secrets.CREDENTIALS }}'
         with:
           script: |
             try {
