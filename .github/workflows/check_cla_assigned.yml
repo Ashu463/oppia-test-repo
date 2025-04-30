@@ -42,9 +42,9 @@ jobs:
             const { OAuth2Client } = require('google-auth-library');
             console.log('Libraries installed successfully');
             const authorize = (credentials) => {
-              const clientSecret = credentials.installed.client_secret;
-              const clientId = credentials.installed.client_id;
-              const redirectUrl = credentials.installed.redirect_uris[0];
+              const clientSecret = credentials.client_secret;
+              const clientId = credentials.client_id;
+              const redirectUrl = credentials.redirect_uris[0];
               const oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUrl);
               oauth2Client.credentials = JSON.parse(process.env.CREDENTIALS);
               return oauth2Client;
