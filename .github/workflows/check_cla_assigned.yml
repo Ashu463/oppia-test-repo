@@ -50,7 +50,7 @@ jobs:
                 refresh_token: sheetsCredJson.refresh_token
               });
 
-              const sheets = google.sheets({ version: 'v4', oauth2Client });
+              const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
               
               console.log(`Fetching data from spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
               const response = await sheets.spreadsheets.values.get({
