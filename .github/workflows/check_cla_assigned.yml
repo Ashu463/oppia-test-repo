@@ -103,6 +103,11 @@ jobs:
               });
               
               // Check for valid response
+              if(!response) {
+                console.log("No response from Google Sheets API");
+                core.setOutput('has-signed-cla', 'false');
+                return;
+              }
               if (!response.data.values) {
                 console.log("No values found in spreadsheet");
                 core.setOutput('has-signed-cla', 'false');
