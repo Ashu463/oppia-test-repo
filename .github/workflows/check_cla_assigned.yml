@@ -62,7 +62,7 @@ jobs:
               
               // Set up JWT auth client instead of OAuth2Client
               // This doesn't require redirect URIs
-              const auth = new JWT({
+              var auth = new JWT({
                 email: sheetsCredJson.client_email || null,
                 key: sheetsCredJson.private_key || null,
                 scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
