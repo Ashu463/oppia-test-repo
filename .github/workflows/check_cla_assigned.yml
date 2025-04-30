@@ -87,7 +87,7 @@ jobs:
                 spreadsheetId: process.env.SPREADSHEET_ID,
                 range: 'Usernames!A:A',
               });
-              
+              console.log(`Data fetched successfully ${response.data.values.length} rows found`);
               // Check for valid response
               if (!response.data.values) {
                 console.log("No values found in spreadsheet");
