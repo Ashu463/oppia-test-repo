@@ -28,12 +28,13 @@ jobs:
         env:
           SHEETS_CRED: '${{ secrets.SHEETS_CRED }}'
           SPREADSHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
-          USERNAME: '${{ github.event.assignee.login }}'
+          ISSUE_ASSIGNEE: '${{ github.event.assignee.login }}'
+          PR_AUTHOR: '${{ github.event.pull_request.user.login }}'
         with:
           script: |
             try {              
               const sheetsCredJson = JSON.parse(process.env.SHEETS_CRED);
-              const username = process.env.USERNAME;              
+              const username = process.env.ISSUE_ASSIGNEE || process.env.PR_AUTHOR;            
               console.log(`Checking CLA signature for user: ${username}`);
               
               const { google } = require('googleapis');
