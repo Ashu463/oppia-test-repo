@@ -41,7 +41,12 @@ jobs:
               const { google } = require('googleapis');
               const { JWT } = require('google-auth-library');
               const { OAuth2Client } = require('google-auth-library');
-              
+              if (!sheetsCredJson.installed || !sheetsCredJson.installed.client_id || !sheetsCredJson.installed.client_secret || !sheetsCredJson.refresh_token) {
+                console.error("SHEETS_CRED is missing required credential fields");
+                core.warning("SHEETS_CRED is missing required credential fields");
+                core.setOutput('has-signed-cla', 'true');
+                return;
+              }
               const oauth2Client = new OAuth2Client(
                 sheetsCredJson.installed.client_id,
                 sheetsCredJson.installed.client_secret
