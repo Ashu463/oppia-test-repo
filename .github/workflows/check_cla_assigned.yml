@@ -128,7 +128,7 @@ jobs:
                 core.setFailed('Invalid pull request payload');
                 return;
               }
-
+              console.log(`Pull request #${pr.number} opened by @${pr.user.login}`);
               const linkToCla = '[here](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#setting-things-up)';
               commentBody = `Hi @${pr.user.login}, you need to sign the CLA before we can accept your pull request. Follow the instructions ${linkToCla} to get started. Thanks!`;
               await github.rest.issues.createComment({
