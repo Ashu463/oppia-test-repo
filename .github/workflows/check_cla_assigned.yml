@@ -35,6 +35,7 @@ jobs:
             try {
               console.log("Starting CLA check...");
               const sheetsCredJson = JSON.parse(process.env.SHEETS_CRED);
+              console.log("SHEETS_CRED loaded successfully");
               const username = process.env.USERNAME;            
               console.log(`Checking CLA signature for user: ${username}`);
               
