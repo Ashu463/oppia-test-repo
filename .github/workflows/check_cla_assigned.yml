@@ -1,6 +1,6 @@
 name: Check Issue Assignee CLA
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - reopened
@@ -34,7 +34,18 @@ jobs:
           script: |
             try {
               console.log("Starting CLA check...");
-              const sheetsCredJson = JSON.parse(process.env.SHEETS_CRED);
+              const sheetsCredRaw = Buffer.from(process.env.SHEETS_CRED_B64, 'base64').toString();
+              console.log("SHEETS_CRED length:", sheetsCredRaw.length); // Debug length without showing content
+              
+              let sheetsCredJson;
+              try {
+                sheetsCredJson = JSON.parse(sheetsCredRaw);
+                console.log("SHEETS_CRED parsed successfully");
+              } catch (parseError) {
+                console.error("Failed to parse SHEETS_CRED:", parseError.message);
+                console.log("First 10 chars:", sheetsCredRaw.substring(0, 10) + "...");
+                throw parseError;
+              }
               console.log("SHEETS_CRED loaded successfully");
               const username = process.env.USERNAME;            
               console.log(`Checking CLA signature for user: ${username}`);
