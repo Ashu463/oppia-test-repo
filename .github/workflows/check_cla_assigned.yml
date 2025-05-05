@@ -34,7 +34,7 @@ jobs:
           script: |
             try {
               console.log("Starting CLA check...");
-              const sheetsCredRaw = Buffer.from(process.env.SHEETS_CRED_B64, 'base64').toString();
+              const sheetsCredRaw = Buffer.from(process.env.SHEETS_CRED, 'base64').toString();
               console.log("SHEETS_CRED length:", sheetsCredRaw.length); // Debug length without showing content
               
               let sheetsCredJson;
