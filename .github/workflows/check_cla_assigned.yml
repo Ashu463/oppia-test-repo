@@ -34,8 +34,7 @@ jobs:
           script: |
             try {
               console.log("Starting CLA check...");
-              # const sheetsCredRaw = Buffer.from(process.env.SHEETS_CRED, 'base64').toString();
-              const sheetsCredRaw = process.env.SHEETS_CRED
+              const sheetsCredRaw = process.env.SHEETS_CRED;
               console.log("SHEETS_CRED length:", sheetsCredRaw.length); // Debug length without showing content
               
               let sheetsCredJson;
@@ -54,46 +53,87 @@ jobs:
               const { google } = require('googleapis');
               const { JWT } = require('google-auth-library');
               const { OAuth2Client } = require('google-auth-library');
-              if (!sheetsCredJson.installed || !sheetsCredJson.installed.client_id || !sheetsCredJson.installed.client_secret || !sheetsCredJson.refresh_token) {
-                console.error("SHEETS_CRED is missing required credential fields");
-                core.warning("SHEETS_CRED is missing required credential fields");
-                core.setOutput('has-signed-cla', 'true');
-                return;
-              }
-              console.log(sheetsCredJson, ' is the sheets credentials');
-              const oauth2Client = new OAuth2Client(
-                sheetsCredJson.installed.client_id,
-                sheetsCredJson.installed.client_secret
-              );
-              oauth2Client.setCredentials({
-                refresh_token: sheetsCredJson.refresh_token
-              });
-
-              const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
-              console.log(`Fetching data from spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
-              const response = await sheets.spreadsheets.values.get({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Usernames!A:A',
-              });
-              if(!response) {
-                console.log("No response from Google Sheets API");
-                core.setOutput('has-signed-cla', 'false');
-                return;
-              }
-              if (!response.data.values) {
-                console.log("No values found in spreadsheet");
-                core.setOutput('has-signed-cla', 'false');
-                return;
-              }
-
-              const lowercaseUsername = username.toLowerCase();
-              const hasSignedCla = response.data.values.some(row => 
-                row[0] && row[0].toLowerCase() === lowercaseUsername
-              );
               
-              console.log(`User ${username} has ${hasSignedCla ? '' : 'not '}signed the CLA`);
-              core.setOutput('has-signed-cla', hasSignedCla ? 'true' : 'false');
+              // Check if it's a service account or OAuth credentials
+              if (sheetsCredJson.type === 'service_account') {
+                // Service Account authentication
+                console.log("Using Service Account authentication");
+                const auth = new google.auth.GoogleAuth({
+                  credentials: sheetsCredJson,
+                  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+                });
+                const sheets = google.sheets({ version: 'v4', auth });
+                
+                console.log(`Fetching data from spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
+                const response = await sheets.spreadsheets.values.get({
+                  spreadsheetId: process.env.SPREADSHEET_ID,
+                  range: 'Usernames!A:A',
+                });
+                
+                if(!response) {
+                  console.log("No response from Google Sheets API");
+                  core.setOutput('has-signed-cla', 'false');
+                  return;
+                }
+                if (!response.data.values) {
+                  console.log("No values found in spreadsheet");
+                  core.setOutput('has-signed-cla', 'false');
+                  return;
+                }
+
+                const lowercaseUsername = username.toLowerCase();
+                const hasSignedCla = response.data.values.some(row => 
+                  row[0] && row[0].toLowerCase() === lowercaseUsername
+                );
+                
+                console.log(`User ${username} has ${hasSignedCla ? '' : 'not '}signed the CLA`);
+                core.setOutput('has-signed-cla', hasSignedCla ? 'true' : 'false');
+                
+              } else {
+                // OAuth2 authentication (original flow)
+                console.log("Using OAuth2 authentication");
+                if (!sheetsCredJson.installed || !sheetsCredJson.installed.client_id || !sheetsCredJson.installed.client_secret || !sheetsCredJson.refresh_token) {
+                  console.error("SHEETS_CRED is missing required credential fields");
+                  core.warning("SHEETS_CRED is missing required credential fields");
+                  core.setOutput('has-signed-cla', 'true');
+                  return;
+                }
+                
+                const oauth2Client = new OAuth2Client(
+                  sheetsCredJson.installed.client_id,
+                  sheetsCredJson.installed.client_secret
+                );
+                oauth2Client.setCredentials({
+                  refresh_token: sheetsCredJson.refresh_token
+                });
+
+                const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+
+                console.log(`Fetching data from spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
+                const response = await sheets.spreadsheets.values.get({
+                  spreadsheetId: process.env.SPREADSHEET_ID,
+                  range: 'Usernames!A:A',
+                });
+                
+                if(!response) {
+                  console.log("No response from Google Sheets API");
+                  core.setOutput('has-signed-cla', 'false');
+                  return;
+                }
+                if (!response.data.values) {
+                  console.log("No values found in spreadsheet");
+                  core.setOutput('has-signed-cla', 'false');
+                  return;
+                }
+
+                const lowercaseUsername = username.toLowerCase();
+                const hasSignedCla = response.data.values.some(row => 
+                  row[0] && row[0].toLowerCase() === lowercaseUsername
+                );
+                
+                console.log(`User ${username} has ${hasSignedCla ? '' : 'not '}signed the CLA`);
+                core.setOutput('has-signed-cla', hasSignedCla ? 'true' : 'false');
+              }
               
             } catch (error) {
               console.error("Error during CLA verification:", error);
