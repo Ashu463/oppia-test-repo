@@ -33,10 +33,7 @@ jobs:
         with:
           script: |
             try {
-              console.log("Starting CLA check...");
               const sheetsCredRaw = process.env.SHEETS_CRED;
-              console.log("SHEETS_CRED length:", sheetsCredRaw.length); // Debug length without showing content
-
               let sheetsCredJson;
               try {
                 sheetsCredJson = JSON.parse(sheetsCredRaw);
@@ -54,9 +51,6 @@ jobs:
               const { JWT } = require('google-auth-library');
               const { OAuth2Client } = require('google-auth-library');
 
-              // Check if it's a service account or OAuth credentials
-              // OAuth2 authentication (original flow)
-              console.log("Using OAuth2 authentication");
               if (!sheetsCredJson.installed || !sheetsCredJson.installed.client_id || !sheetsCredJson.installed.client_secret || !sheetsCredJson.refresh_token) {
                 console.error("SHEETS_CRED is missing required credential fields");
                 core.warning("SHEETS_CRED is missing required credential fields");
@@ -73,7 +67,6 @@ jobs:
               });
 
               const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
               console.log(`Fetching data from spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
               const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.SPREADSHEET_ID,
@@ -163,7 +156,14 @@ jobs:
                 body: commentBody
               });
 
-              console.log(`Commented on PR #${pr.number} due to unsigned CLA`);
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
+
+              console.log(`Closed and commented on PR #${pr.number} due to unsigned CLA`);
             } else {
               core.setFailed('Unknown event type or missing context');
             }
