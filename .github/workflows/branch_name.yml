@@ -31,8 +31,9 @@ jobs:
                 branch.startsWith("test-")
                 ) {
                 const pr = context.payload.pull_request;
-                const assignee = context.payload.assignee;
-                const comment = `Hi @${assignee.login}, PRs made from a branch whose name is prefixed with \`${branch}\` are not allowed. Also PRs made from develop branch or from a branch whose name is prefixed with develop, release or test are not allowed. So this PR is being closed. Please make your changes in another branch and send in the PR. To learn more about contributing to Oppia, take a look at our [wiki](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#instructions-for-making-a-code-change) (Rule 1 specifically). Thanks!`;
+                const author = context.payload.pull_request.user;
+
+                const comment = `Hi @${author.login}, PRs made from a branch whose name is prefixed with \`${branch}\` are not allowed. Also PRs made from develop branch or from a branch whose name is prefixed with develop, release or test are not allowed. So this PR is being closed. Please make your changes in another branch and send in the PR. To learn more about contributing to Oppia, take a look at our [wiki](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#instructions-for-making-a-code-change) (Rule 1 specifically). Thanks!`;
 
                 await github.rest.issues.createComment({
                 owner: context.repo.owner,
