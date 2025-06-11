@@ -6,6 +6,8 @@ permissions: read-all
 jobs:
   validate_branch_name:
     runs-on: ubuntu-24.04
+    permissions:
+        pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
