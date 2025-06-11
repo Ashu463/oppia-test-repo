@@ -1,7 +1,10 @@
 name: Validating branch name
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize]
+    types: 
+        - opened 
+        - reopened
+
 permissions: read-all
 jobs:
   validate_branch_name:
