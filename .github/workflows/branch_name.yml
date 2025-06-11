@@ -6,7 +6,7 @@ permissions: read-all
 jobs:
   validate_branch_name:
     runs-on: ubuntu-24.04
-    permissions:
+    permissions: 
         pull-requests: write
     steps:
       - name: Checkout repository
