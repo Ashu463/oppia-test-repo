@@ -110,6 +110,7 @@ jobs:
             const isPullRequest = !!context.payload.pull_request;
             const isIssue = !!context.payload.issue;
             const assignee = context.payload.assignee;
+            const username = process.env.USERNAME;
             let targetNumber, assigneeLogin, commentBody;
             
             if (isIssue && context.payload.assignee) {
@@ -121,7 +122,7 @@ jobs:
               }
 
               const linkToCla = '[here](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#setting-things-up)';
-              commentBody = `Hi @${assignee.login}, you need to sign the CLA before you can get assigned to issues. Follow the instructions ${linkToCla} to get started. I am unassigning you for now, feel free to assign yourself once you have signed the CLA. Thanks!`;
+              commentBody = `Hi @${username}, you need to sign the CLA before you can get assigned to issues. Follow the instructions ${linkToCla} to get started. I am unassigning you for now, feel free to assign yourself once you have signed the CLA. Thanks!`;
               
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
