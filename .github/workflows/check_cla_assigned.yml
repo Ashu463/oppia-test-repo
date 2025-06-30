@@ -111,13 +111,11 @@ jobs:
             // Determine if we're handling a PR or an issue
             const isPullRequest = !!context.payload.pull_request;
             const isIssue = !!context.payload.issue;
-            const assignee = context.payload.assignee;
             const username = process.env.USERNAME;
-            let targetNumber, assigneeLogin, commentBody;
+            let targetNumber, commentBody;
             
             if (isIssue && context.payload.assignee) {
               const issue = context.payload.issue;
-              const assignee = context.payload.assignee;
               const username = process.env.USERNAME;
               if (!issue) {
                 core.setFailed('Invalid issue payload');
@@ -141,7 +139,7 @@ jobs:
                 assignees: username
               });
               
-              console.log(`Removed assignee ${assignee.login} from issue #${issue.number} due to unsigned CLA`);
+              console.log(`Removed assignee ${username} from issue #${issue.number} due to unsigned CLA`);
 
             } else if (isPullRequest) {
               // Handle pull request
