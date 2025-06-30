@@ -121,7 +121,7 @@ jobs:
               }
 
               const linkToCla = '[here](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#setting-things-up)';
-              commentBody = `Hi @${username}, you need to sign the CLA before you can get assigned to issues. Follow the instructions ${linkToCla} to get started. I am unassigning you for now, feel free to assign yourself once you have signed the CLA. Thanks!`;
+              commentBody = `Hi @${assignee.login}, you need to sign the CLA before you can get assigned to issues. Follow the instructions ${linkToCla} to get started. I am unassigning you for now, feel free to assign yourself once you have signed the CLA. Thanks!`;
               
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -134,10 +134,10 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                assignees: [assignee.login]
+                assignees: username
               });
               
-              console.log(`Removed assignee ${assignee.login} from issue #${issue.number} due to unsigned CLA`);
+              console.log(`Removed assignee ${username} from issue #${issue.number} due to unsigned CLA`);
 
             } else if (isPullRequest) {
               // Handle pull request
