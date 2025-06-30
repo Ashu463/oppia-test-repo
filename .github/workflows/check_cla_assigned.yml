@@ -72,7 +72,7 @@ jobs:
                 spreadsheetId: process.env.SPREADSHEET_ID,
                 range: 'Usernames!A:A',
               });
-              console.log(response, ' is the response received from sheets API')
+
               if (!response) {
                 console.log("No response from Google Sheets API");
                 core.setOutput('has-signed-cla', 'false');
@@ -110,11 +110,11 @@ jobs:
             const isPullRequest = !!context.payload.pull_request;
             const isIssue = !!context.payload.issue;
             const assignee = context.payload.assignee;
-            const username = process.env.USERNAME;
             let targetNumber, assigneeLogin, commentBody;
             
             if (isIssue && context.payload.assignee) {
               const issue = context.payload.issue;
+              const assignee = context.payload.assignee;
               if (!issue) {
                 core.setFailed('Invalid issue payload');
                 return;
@@ -134,10 +134,10 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                assignees: username
+                assignees: [assignee.login]
               });
               
-              console.log(`Removed assignee ${username} from issue #${issue.number} due to unsigned CLA`);
+              console.log(`Removed assignee ${assignee.login} from issue #${issue.number} due to unsigned CLA`);
 
             } else if (isPullRequest) {
               // Handle pull request
