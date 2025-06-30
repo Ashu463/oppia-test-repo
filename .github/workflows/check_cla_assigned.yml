@@ -112,6 +112,7 @@ jobs:
             const isPullRequest = !!context.payload.pull_request;
             const isIssue = !!context.payload.issue;
             const assignee = context.payload.assignee;
+            const username = process.env.USERNAME;
             let targetNumber, assigneeLogin, commentBody;
             
             if (isIssue && context.payload.assignee) {
