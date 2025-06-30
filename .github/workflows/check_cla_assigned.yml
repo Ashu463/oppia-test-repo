@@ -137,7 +137,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                assignees: [assignee.login]
+                assignees: username
               });
               
               console.log(`Removed assignee ${assignee.login} from issue #${issue.number} due to unsigned CLA`);
@@ -151,7 +151,7 @@ jobs:
               }
               console.log(`Pull request #${pr.number} opened by @${pr.user.login}`);
               const linkToCla = '[here](https://github.com/oppia/oppia/wiki/Contributing-code-to-Oppia#setting-things-up)';
-              commentBody = `Hi @${pr.user.login}, you need to sign the CLA before we can accept your pull request. Follow the instructions ${linkToCla} to get started. Thanks!`;
+              commentBody = `Hi @${username}, you need to sign the CLA before we can accept your pull request. Follow the instructions ${linkToCla} to get started. Thanks!`;
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
