@@ -27,13 +27,13 @@ jobs:
         id: check-cla
         uses: actions/github-script@v6
         env:
-          SHEETS_CRED: '${{ secrets.SHEETS_CRED }}'
-          SPREADSHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
+          CLIENT_SECRET: '${{ secrets.SHEETS_CRED }}'
+          CLA_SHEET_ID: '${{ secrets.SPREADSHEET_ID }}'
           USERNAME: '${{ github.event.pull_request.user.login || github.event.assignee.login }}'
         with:
           script: |
             try {
-              const sheetsCredRaw = process.env.SHEETS_CRED;
+              const sheetsCredRaw = process.env.CLIENT_SECRET;
               let sheetsCredJson;
               sheetsCredJson = JSON.parse(sheetsCredRaw);
               const username = process.env.USERNAME;
@@ -44,8 +44,8 @@ jobs:
               const { OAuth2Client } = require('google-auth-library');
 
               if (!sheetsCredJson.installed || !sheetsCredJson.installed.client_id || !sheetsCredJson.installed.client_secret || !sheetsCredJson.refresh_token) {
-                console.error("SHEETS_CRED is missing required credential fields");
-                core.warning("SHEETS_CRED is missing required credential fields");
+                console.error("CLIENT_SECRET is missing required credential fields");
+                core.warning("CLIENT_SECRET is missing required credential fields");
                 core.setOutput('has-signed-cla', 'false');
                 return;
               }
@@ -60,7 +60,7 @@ jobs:
 
               const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
               const response = await sheets.spreadsheets.values.get({
-                spreadsheetId: process.env.SPREADSHEET_ID,
+                spreadsheetId: process.env.CLA_SHEET_ID,
                 range: 'Usernames!A:A',
               });
 
@@ -155,7 +155,15 @@ jobs:
 
               console.log(`Closed and commented on PR #${pr.number} due to unsigned CLA`);
             } else {
+              const contextInfo = {
+                eventName: context.eventName,
+                username: username,
+                fullPayload: context.payload
+              };
+              console.error('CLA enforcement failed - unable to determine event type');
+              console.error("Context information:", contextInfo);
               core.setFailed('Unknown event type or missing context');
+              
             }
 
       - name: Report failure if failed on oppia/oppia develop branch
