@@ -72,7 +72,7 @@ jobs:
                 spreadsheetId: process.env.SPREADSHEET_ID,
                 range: 'Usernames!A:A',
               });
-
+              console.log(response, ' is the response received from sheets API')
               if (!response) {
                 console.log("No response from Google Sheets API");
                 core.setOutput('has-signed-cla', 'false');
