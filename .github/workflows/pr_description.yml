@@ -23,15 +23,24 @@ jobs:
         with:
             script: |
                 const prDescription = context.payload.pull_request.body;
-                console.log("PR Description:", prDescription);
-
                 if (!prDescription) {
                     throw new Error("The PR description is missing or does not meet the required format.");
                 }
-        
+                console.log("PR Description:", prDescription);
+                const requiredSections = [
+                    '## Overview',
+                    '## Essential Checklist',
+                    '## Proof that changes are correct',
+                    '## PR Pointers'
+                ];
 
+                const hasRequiredSections = requiredSections.every(section => prDescription.includes(section));
+                if (!hasRequiredSections) {
+                    throw new Error("The PR description is missing required sections.");
+                }
+        
       - name: Report failure if PR description is missing
-        if: ${{ failure() && github.event_name == 'pull_request' }}
+        if: failure()
         uses: ./.github/actions/send-webhook-notification
         with:
           message: "The PR description is missing or does not meet the required format."
