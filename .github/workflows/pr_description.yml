@@ -8,6 +8,8 @@ on:
 permissions: {}
 jobs:
   check_pr_description:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
 
@@ -40,6 +42,7 @@ jobs:
 
                 if (missingSections.length > 0) {
                     const username = pr.user.login;
+                    console.log(username, ' ')
                     const comment = `Hi @${username}, your PR is missing the following required section(s):\n\n` +
                                     missingSections.map(s => `- ${s}`).join('\n') +
                                     `\n\nPlease update the description accordingly. This PR will now be closed.`;
