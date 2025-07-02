@@ -9,9 +9,7 @@ permissions: {}
 jobs:
   check_pr_description:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    steps:
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -33,7 +31,6 @@ jobs:
                     '## Proof that changes are correct',
                     '## PR Pointers'
                 ];
-                const username = pr.user.login;
                 console.log("Username:", username);
                 const missingSections = requiredSections.filter(
                     section => !PR_description.includes(section)
@@ -41,6 +38,8 @@ jobs:
                 console.log("Missing Sections:", missingSections);
                 if (missingSections.length > 0) {
                     const pr = context.payload.pull_request;
+                    const username = pr.user.login;
+
                     const comment = "Hi @${username}, can you complete the following:
                     await github.rest.issues.createComment({
                         owner: context.repo.owner,
