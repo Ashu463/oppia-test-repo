@@ -20,6 +20,8 @@ jobs:
 
       - name: Run PR description check
         uses: actions/github-script@v6
+        env:
+          USERNAME: '${{ github.event.pull_request.user.login || github.event.assignee.login }}'
         with:
             script: |
                 const prDescription = context.payload.pull_request.body;
@@ -33,9 +35,27 @@ jobs:
                     '## Proof that changes are correct',
                     '## PR Pointers'
                 ];
-
-                const hasRequiredSections = requiredSections.every(section => prDescription.includes(section));
-                if (!hasRequiredSections) {
+                const username = process.env.USERNAME;
+                console.log("Username:", username);
+                const missingSections = requiredSections.filter(
+                    section => !PR_description.includes(section)
+                );
+                console.log("Missing Sections:", missingSections);
+                if (missingSections.length > 0) {
+                    const pr = context.payload.pull_request;
+                    const comment = "Hi @${username}, can you complete the following:
+                    await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: pr.number,
+                        body: comment
+                    });
+                    await github.rest.pulls.update({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: pr.number,
+                        state: 'closed'
+                    });
                     throw new Error("The PR description is missing required sections.");
                 }
         
