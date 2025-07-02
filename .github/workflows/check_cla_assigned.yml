@@ -124,10 +124,10 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                assignees: username
+                assignees: [assignee.login]
               });
               
-              console.log(`Removed assignee ${username} from issue #${issue.number} due to unsigned CLA`);
+              console.log(`Removed assignee ${assignee.login} from issue #${issue.number} due to unsigned CLA`);
 
             } else if (isPullRequest) {
               // Handle pull request
