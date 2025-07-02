@@ -20,41 +20,48 @@ jobs:
         uses: actions/github-script@v6
         with:
             script: |
-                const prDescription = context.payload.pull_request.body;
+                const pr = context.payload.pull_request;
+                const prDescription = pr.body;
+
                 if (!prDescription) {
                     throw new Error("The PR description is missing or does not meet the required format.");
                 }
-                console.log("PR Description:", prDescription);
+
                 const requiredSections = [
                     '## Overview',
                     '## Essential Checklist',
                     '## Proof that changes are correct',
                     '## PR Pointers'
                 ];
-                console.log("Username:", username);
-                const missingSections = requiredSections.filter(
-                    section => !PR_description.includes(section)
-                );
-                console.log("Missing Sections:", missingSections);
-                if (missingSections.length > 0) {
-                    const pr = context.payload.pull_request;
-                    const username = pr.user.login;
 
-                    const comment = "Hi @${username}, can you complete the following:
+                const missingSections = requiredSections.filter(
+                    section => !prDescription.includes(section)
+                );
+
+                if (missingSections.length > 0) {
+                    const username = pr.user.login;
+                    const comment = `Hi @${username}, your PR is missing the following required section(s):\n\n` +
+                                    missingSections.map(s => `- ${s}`).join('\n') +
+                                    `\n\nPlease update the description accordingly. This PR will now be closed.`;
+
                     await github.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: pr.number,
-                        body: comment
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: pr.number,
+                    body: comment
                     });
+
                     await github.rest.pulls.update({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        pull_number: pr.number,
-                        state: 'closed'
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number,
+                    state: 'closed'
                     });
+
                     throw new Error("The PR description is missing required sections.");
                 }
+
+                console.log("✅ All required sections are present.");
         
       - name: Report failure if PR description is missing
         if: failure()
