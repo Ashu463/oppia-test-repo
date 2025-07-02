@@ -42,10 +42,9 @@ jobs:
 
                 if (missingSections.length > 0) {
                     const username = pr.user.login;
-                    console.log(username, ' ')
                     const comment = `Hi @${username}, your PR is missing the following required section(s):\n\n` +
-                                    missingSections.map(s => `- ${s}`).join('\n') +
-                                    `\n\nPlease update the description accordingly. This PR will now be closed.`;
+                        missingSections.map(s => `- ${s.replace(/^##\s*/, '')}`).join('\n') +
+                        `\n\nPlease update the description accordingly. This PR will now be closed.`;
 
                     await github.rest.issues.createComment({
                     owner: context.repo.owner,
