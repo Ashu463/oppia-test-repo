@@ -20,8 +20,6 @@ jobs:
 
       - name: Run PR description check
         uses: actions/github-script@v6
-        env:
-          USERNAME: '${{ github.event.pull_request.user.login || github.event.assignee.login }}'
         with:
             script: |
                 const prDescription = context.payload.pull_request.body;
@@ -35,7 +33,7 @@ jobs:
                     '## Proof that changes are correct',
                     '## PR Pointers'
                 ];
-                const username = process.env.USERNAME;
+                const username = pr.user.login;
                 console.log("Username:", username);
                 const missingSections = requiredSections.filter(
                     section => !PR_description.includes(section)
