@@ -65,9 +65,10 @@ jobs:
 
                 console.log("✅ All required sections are present.");
         
-      - name: Report failure if PR description is missing
-        if: failure()
+        
+      - name: Report failure if failed on oppia/oppia develop branch
+        if: ${{ failure() && github.event_name == 'push' && github.repository == 'oppia/oppia' && github.ref == 'refs/heads/develop' }}
         uses: ./.github/actions/send-webhook-notification
         with:
-          message: "The PR description is missing or does not meet the required format."
+          message: "Validating branch name failed on the upstream develop branch."
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
