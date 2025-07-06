@@ -1,11 +1,10 @@
-name: Checking PR description
-'on':
+name: Check PR description
+on:
   pull_request:
     types:
       - opened
       - reopened
-      - edited
-permissions: {}
+permissions: read-all
 jobs:
   check_pr_description:
     permissions:
@@ -24,7 +23,7 @@ jobs:
             const prDescription = pr.body;
 
             if (!prDescription) {
-                throw new Error("The PR description is missing or does not meet the required format.");
+              core.setFailed("The PR description is missing or does not meet the required format.");
             }
 
             const requiredSections = [
@@ -40,8 +39,7 @@ jobs:
 
             if (missingSections.length > 0) {
                 const username = pr.user.login;
-                const comment = `Hi @${username}, your PR is missing the following required section(s):\n\n` + missingSections.map(s => `- ${s.replace(/^##\s*/, '')}`).join('\n') + `\n\nPlease update the description accordingly and open the PR.`;
-
+                const comment = `Hi @${username}, it looks like the description of this PR doesn't use our [template](https://github.com/oppia/oppia/blob/develop/.github/PULL_REQUEST_TEMPLATE.md), which is pre-populated when you open a new PR. Specifically, it's missing the following required sections:\n\n` + missingSections.map(s => `- ${s.replace(/^##\s*/, '')}`).join('\n') + `Please re-open this PR and fill in the template without deleting any required sections.`
                 await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -56,14 +54,12 @@ jobs:
                     state: 'closed'
                 });
 
-                throw new Error("The PR description is missing required sections.");
+                core.setFailed("The PR description is missing required sections.");
             }
 
       - name: Report failure if failed on oppia/oppia develop branch
-        if: >-
-          ${{ failure() && github.event_name == 'push' && github.repository ==
-          'oppia/oppia' && github.ref == 'refs/heads/develop' }}
+        if: ${{ failure() && github.event_name == 'push' && github.repository == 'oppia/oppia' && github.ref == 'refs/heads/develop' }}
         uses: ./.github/actions/send-webhook-notification
         with:
-          message: Validating PR description failed on the upstream develop branch.
-          webhook-url: '${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}'
+          message: "Validating PR description failed on the upstream develop branch."
+          webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
