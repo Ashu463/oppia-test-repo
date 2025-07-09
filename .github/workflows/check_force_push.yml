@@ -2,7 +2,7 @@ name: Check for Force Push in PR
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, reopened, synchronize]
 
 jobs:
   check-force-push:
