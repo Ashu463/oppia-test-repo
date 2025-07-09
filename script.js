@@ -1,0 +1,149 @@
+const { owner, repo } = context.repo;
+const pr = context.payload.pull_request;
+const prNumber = pr.number;
+
+console.log(`Checking PR #${prNumber} for force push commits...`);
+
+// Only check on PR opened event, not on synchronize
+if (context.payload.action !== 'opened') {
+  console.log('Skipping check - PR is not being opened');
+  return;
+}
+
+// Get the PR branch name
+const headBranch = pr.head.ref;
+const baseBranch = pr.base.ref;
+
+console.log(`PR branch: ${headBranch}, Base branch: ${baseBranch}`);
+
+try {
+  // Get the commits in the PR
+  const commits = await github.rest.pulls.listCommits({
+    owner,
+    repo,
+    pull_request_number: prNumber,
+    per_page: 100
+  });
+  
+  console.log(`Found ${commits.data.length} commits in PR`);
+  
+  // Check each commit for force push indicators
+  let forcePushDetected = false;
+  const suspiciousCommits = [];
+  
+  for (const commit of commits.data) {
+    const commitMessage = commit.commit.message.toLowerCase();
+    const commitSha = commit.sha;
+    
+    // Check for force push indicators in commit messages
+    const forcePushIndicators = [
+      'force push',
+      'force-push',
+      'forced push',
+      'force update',
+      'rewrite history',
+      'amended commit',
+      'rebased',
+      'squashed',
+      'cherry-pick',
+      'reset --hard'
+    ];
+    
+    const hasIndicator = forcePushIndicators.some(indicator => 
+      commitMessage.includes(indicator)
+    );
+    
+    if (hasIndicator) {
+      suspiciousCommits.push({
+        sha: commitSha,
+        message: commit.commit.message,
+        indicator: forcePushIndicators.find(indicator => 
+          commitMessage.includes(indicator)
+        )
+      });
+    }
+  }
+  
+  // Additional check: Compare with reflog if available
+  // This is a more reliable method to detect force pushes
+  try {
+    // Get the comparison between base and head
+    const comparison = await github.rest.repos.compareCommits({
+      owner,
+      repo,
+      base: baseBranch,
+      head: headBranch
+    });
+    
+    // Check if there are any commits that might indicate history rewriting
+    if (comparison.data.commits.length > 0) {
+      const firstCommit = comparison.data.commits[0];
+      const lastCommit = comparison.data.commits[comparison.data.commits.length - 1];
+      
+      // Check if commit dates are not in chronological order (might indicate rebase/force push)
+      const commitDates = comparison.data.commits.map(c => new Date(c.commit.author.date));
+      const sortedDates = [...commitDates].sort();
+      
+      if (JSON.stringify(commitDates) !== JSON.stringify(sortedDates)) {
+        console.log('Detected possible history rewriting based on commit dates');
+        forcePushDetected = true;
+      }
+    }
+    
+    // Check for any merge commits that might indicate force push with merge
+    const mergeCommits = commits.data.filter(commit => 
+      commit.parents && commit.parents.length > 1
+    );
+    
+    if (mergeCommits.length > 0) {
+      console.log(`Found ${mergeCommits.length} merge commits`);
+      // This might be legitimate, but worth noting
+    }
+    
+  } catch (error) {
+    console.log('Could not perform additional force push checks:', error.message);
+  }
+  
+  // Check if suspicious commits were found
+  if (suspiciousCommits.length > 0) {
+    forcePushDetected = true;
+    console.log('Suspicious commits found:', suspiciousCommits);
+  }
+  
+  // If force push is detected, create a comment and fail the check
+  if (forcePushDetected) {
+    let commentBody = `⚠️ **Force Push Detected**\n\n`;
+    commentBody += `This PR appears to contain commits that may have been created using force push or history rewriting operations. `;
+    commentBody += `Please avoid force pushes to maintain a clean and traceable commit history.\n\n`;
+    
+    if (suspiciousCommits.length > 0) {
+      commentBody += `**Suspicious commits found:**\n`;
+      suspiciousCommits.forEach(commit => {
+        commentBody += `- \`${commit.sha.substring(0, 7)}\` - ${commit.message.split('\n')[0]} (Indicator: "${commit.indicator}")\n`;
+      });
+    }
+    
+    commentBody += `\n**Recommended actions:**\n`;
+    commentBody += `1. If you need to modify commits, create a new branch from the latest base branch\n`;
+    commentBody += `2. Apply your changes as new commits instead of amending/rebasing\n`;
+    commentBody += `3. If this is a false positive, please contact the repository maintainers\n`;
+    
+    // Create comment on PR
+    await github.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: prNumber,
+      body: commentBody
+    });
+    
+    // Fail the check
+    core.setFailed('Force push detected in PR. Please avoid force pushes as per contribution guidelines.');
+  } else {
+    console.log('No force push detected. PR is ready for review.');
+  }
+  
+} catch (error) {
+  console.error('Error checking for force push:', error);
+  // Don't fail the check for API errors, just log them
+  console.log('Continuing despite error - manual review may be needed');
+}
