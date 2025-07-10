@@ -5,7 +5,6 @@ on:
     types: [opened, reopened, synchronize]
     branches:
       - master
-      - feat#force-push
 
 jobs:
   check-force-push:
