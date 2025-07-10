@@ -91,22 +91,15 @@ jobs:
               
               // If force push is detected, create a comment and fail the check
               if (forcePushDetected) {
-                let commentBody = `⚠️ **Force Push Detected**\n\n`;
-                commentBody += `This PR appears to contain commits that may have been created using force push or history rewriting operations. `;
-                commentBody += `Please avoid force pushes to maintain a clean and traceable commit history.\n\n`;
+                let commentBody = `**Force Push Detected**\n\n`;
+                commentBody += `This PR appears to contain commits that may have been created using force push or history rewriting operations. Please avoid force pushes, see our [PR guidelines](https://github.com/oppia/oppia/wiki/Rules-for-making-PRs#step-3-push-changes-to-your-github-fork).\n\n`;
                 
-                if (suspiciousCommits.length > 0) {
-                  commentBody += `**Suspicious commits found:**\n`;
-                  suspiciousCommits.forEach(commit => {
-                    commentBody += `- \`${commit.sha.substring(0, 7)}\` - ${commit.message.split('\n')[0]} (Indicator: "${commit.indicator}")\n`;
-                  });
-                }
+                commentBody += `**Suspicious commits found:**\n`;
+                suspiciousCommits.forEach(commit => {
+                  commentBody += `- \`${commit.sha.substring(0, 7)}\` - ${commit.message.split('\n')[0]} (Indicator: "${commit.indicator}")\n`;
+                });
                 
-                commentBody += `\n**Recommended actions:**\n`;
-                commentBody += `1. If you need to modify commits, create a new branch from the latest base branch\n`;
-                commentBody += `2. Apply your changes as new commits instead of amending/rebasing\n`;
-                commentBody += `3. If this is a false positive, please contact the repository maintainers\n`;
-                
+                commentBody += `\n I am closing this PR to prevent further issues, you may open a new PR with the necessary changes.`;
                 // Create comment on PR
                 await github.rest.issues.createComment({
                   owner,
