@@ -135,6 +135,13 @@ const { owner, repo } = context.repo;
                   issue_number: prNumber,
                   body: commentBody
                 });
+
+                await github.rest.pulls.update({
+                  owner,
+                  repo, 
+                  pull_number: prNumber,
+                  state: 'closed' // Optionally close the PR if force push is detected
+                })
                 
                 // Fail the check
                 core.setFailed('Force push detected in PR. Please avoid force pushes as per contribution guidelines.');
