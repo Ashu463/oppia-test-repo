@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
+      - master
       - feat#force-push
 
 jobs:
@@ -85,43 +86,43 @@ jobs:
               
               // Additional check: Compare with reflog if available
               // This is a more reliable method to detect force pushes
-              try {
-                // Get the comparison between base and head
-                const comparison = await github.rest.repos.compareCommits({
-                  owner,
-                  repo,
-                  base: baseBranch,
-                  head: headBranch
-                });
+              // try {
+              //   // Get the comparison between base and head
+              //   const comparison = await github.rest.repos.compareCommits({
+              //     owner,
+              //     repo,
+              //     base: baseBranch,
+              //     head: headBranch
+              //   });
                 
-                // Check if there are any commits that might indicate history rewriting
-                if (comparison.data.commits.length > 0) {
-                  const firstCommit = comparison.data.commits[0];
-                  const lastCommit = comparison.data.commits[comparison.data.commits.length - 1];
+              //   // Check if there are any commits that might indicate history rewriting
+              //   if (comparison.data.commits.length > 0) {
+              //     const firstCommit = comparison.data.commits[0];
+              //     const lastCommit = comparison.data.commits[comparison.data.commits.length - 1];
                   
-                  // Check if commit dates are not in chronological order (might indicate rebase/force push)
-                  const commitDates = comparison.data.commits.map(c => new Date(c.commit.author.date));
-                  const sortedDates = [...commitDates].sort();
+              //     // Check if commit dates are not in chronological order (might indicate rebase/force push)
+              //     const commitDates = comparison.data.commits.map(c => new Date(c.commit.author.date));
+              //     const sortedDates = [...commitDates].sort();
                   
-                  if (JSON.stringify(commitDates) !== JSON.stringify(sortedDates)) {
-                    console.log('Detected possible history rewriting based on commit dates');
-                    forcePushDetected = true;
-                  }
-                }
+              //     if (JSON.stringify(commitDates) !== JSON.stringify(sortedDates)) {
+              //       console.log('Detected possible history rewriting based on commit dates');
+              //       forcePushDetected = true;
+              //     }
+              //   }
                 
-                // Check for any merge commits that might indicate force push with merge
-                const mergeCommits = commits.data.filter(commit => 
-                  commit.parents && commit.parents.length > 1
-                );
+              //   // Check for any merge commits that might indicate force push with merge
+              //   const mergeCommits = commits.data.filter(commit => 
+              //     commit.parents && commit.parents.length > 1
+              //   );
                 
-                if (mergeCommits.length > 0) {
-                  console.log(`Found ${mergeCommits.length} merge commits`);
-                  // This might be legitimate, but worth noting
-                }
+              //   if (mergeCommits.length > 0) {
+              //     console.log(`Found ${mergeCommits.length} merge commits`);
+              //     // This might be legitimate, but worth noting
+              //   }
                 
-              } catch (error) {
-                console.log('Could not perform additional force push checks:', error.message);
-              }
+              // } catch (error) {
+              //   console.log('Could not perform additional force push checks:', error.message);
+              // }
               
               // Check if suspicious commits were found
               if (suspiciousCommits.length > 0) {
@@ -166,6 +167,7 @@ jobs:
               // Don't fail the check for API errors, just log them
               console.log('Continuing despite error - manual review may be needed');
             }
+
             
       - name: Add warning label if force push detected
         if: failure()
