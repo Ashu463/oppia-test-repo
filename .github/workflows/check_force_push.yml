@@ -115,6 +115,12 @@ jobs:
                   body: commentBody
                 });
                 
+                await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  state: 'closed'
+                })
                 // Fail the check
                 core.setFailed('Force push detected in PR. Please avoid force pushes as per contribution guidelines.');
               } else {
