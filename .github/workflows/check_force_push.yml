@@ -20,7 +20,8 @@ jobs:
             const { owner, repo } = context.repo;
             const pr = context.payload.pull_request;
             const prNumber = pr.number;
-            
+            const author = context.payload.pull_request.user;
+
             console.log(`Checking PR #${prNumber} for force push commits...`);
             
             // Only check on PR opened event, not on synchronize
@@ -92,7 +93,7 @@ jobs:
               // If force push is detected, create a comment and fail the check
               if (forcePushDetected) {
                 let commentBody = `**Force Push Detected**\n\n`;
-                commentBody += `This PR appears to contain commits that may have been created using force push or history rewriting operations. Please avoid force pushes, see our [PR guidelines](https://github.com/oppia/oppia/wiki/Rules-for-making-PRs#step-3-push-changes-to-your-github-fork).\n\n`;
+                commentBody += `Hi @${author.login} this PR appears to contain commits that may have been created using force push or history rewriting operations. Please avoid force pushes, see our [PR guidelines](https://github.com/oppia/oppia/wiki/Rules-for-making-PRs#step-3-push-changes-to-your-github-fork).\n\n`;
                 
                 commentBody += `**Suspicious commits found:**\n`;
                 suspiciousCommits.forEach(commit => {
