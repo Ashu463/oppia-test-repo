@@ -9,7 +9,6 @@ const { owner, repo } = context.repo;
               console.log('Skipping check - PR is not being opened');
               return;
             }
-            // asf
             
             // Get the PR branch name
             const headBranch = pr.head.ref;
