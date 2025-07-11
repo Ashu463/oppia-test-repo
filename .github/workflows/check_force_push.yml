@@ -3,7 +3,7 @@ name: Check for Force Push in PR
 on:
   pull_request:
     branches:
-      - develop
+      - master
 jobs:
   check-force-push:
     runs-on: ubuntu-latest
